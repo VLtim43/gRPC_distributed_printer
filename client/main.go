@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -15,7 +16,10 @@ import (
 )
 
 func main() {
-	fmt.Println("========== CLIENT ==========")
+	// Auto-generate unique client ID (using Int31 for shorter IDs)
+	clientID := fmt.Sprintf("%d", rand.Int31())
+
+	fmt.Printf("========== CLIENT %s ==========\n", clientID)
 	fmt.Println()
 
 	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -27,7 +31,7 @@ func main() {
 	client := pb.NewPrintServiceClient(conn)
 	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Println("Connected to print server. Type messages to print (Ctrl+C to exit):")
+	fmt.Printf("Connected to print server as CLIENT %s. Type messages to print (Ctrl+C to exit):\n", clientID)
 
 	for {
 		fmt.Print("> ")
@@ -40,9 +44,10 @@ func main() {
 			continue
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		resp, err := client.Print(ctx, &pb.PrintRequest{
-			Message: message,
+			Message:  message,
+			ClientId: clientID,
 		})
 		cancel()
 

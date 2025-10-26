@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	pb "distributed-printer/proto"
 
@@ -19,13 +21,21 @@ type printServer struct {
 }
 
 func (s *printServer) Print(ctx context.Context, req *pb.PrintRequest) (*pb.PrintResponse, error) {
-	log.Printf("Received print request: %s", req.Message)
+	// Get current timestamp
+	timestamp := time.Now().Unix()
 
-	fmt.Println("PRINTING:", req.Message)
+	// Print in the specified format
+	printOutput := fmt.Sprintf("[TS: %d] CLIENT %s: %s", timestamp, req.ClientId, req.Message)
+	fmt.Println(printOutput)
 
+	// Simulate printing time with 2-3 second delay
+	delay := 2 + rand.Intn(2) // Random delay between 2-3 seconds
+	time.Sleep(time.Duration(delay) * time.Second)
+
+	// Return print confirmation
 	return &pb.PrintResponse{
 		Success: true,
-		Result:  fmt.Sprintf("Printed: %s", req.Message),
+		Result:  fmt.Sprintf("Print job completed for client %s", req.ClientId),
 	}, nil
 }
 

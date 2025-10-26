@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.32.1
-// source: printer.proto
+// source: proto/printer.proto
 
 package proto
 
@@ -25,8 +25,6 @@ const (
 // PrintServiceClient is the client API for PrintService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Simple print service
 type PrintServiceClient interface {
 	Print(ctx context.Context, in *PrintRequest, opts ...grpc.CallOption) (*PrintResponse, error)
 }
@@ -52,8 +50,6 @@ func (c *printServiceClient) Print(ctx context.Context, in *PrintRequest, opts .
 // PrintServiceServer is the server API for PrintService service.
 // All implementations must embed UnimplementedPrintServiceServer
 // for forward compatibility.
-//
-// Simple print service
 type PrintServiceServer interface {
 	Print(context.Context, *PrintRequest) (*PrintResponse, error)
 	mustEmbedUnimplementedPrintServiceServer()
@@ -121,5 +117,5 @@ var PrintService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "printer.proto",
+	Metadata: "proto/printer.proto",
 }

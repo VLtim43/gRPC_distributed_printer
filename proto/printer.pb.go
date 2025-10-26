@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v6.32.1
-// source: printer.proto
+// source: proto/printer.proto
 
 package proto
 
@@ -24,13 +24,14 @@ const (
 type PrintRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Message       string                 `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+	ClientId      string                 `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PrintRequest) Reset() {
 	*x = PrintRequest{}
-	mi := &file_printer_proto_msgTypes[0]
+	mi := &file_proto_printer_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +43,7 @@ func (x *PrintRequest) String() string {
 func (*PrintRequest) ProtoMessage() {}
 
 func (x *PrintRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_printer_proto_msgTypes[0]
+	mi := &file_proto_printer_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,12 +56,19 @@ func (x *PrintRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PrintRequest.ProtoReflect.Descriptor instead.
 func (*PrintRequest) Descriptor() ([]byte, []int) {
-	return file_printer_proto_rawDescGZIP(), []int{0}
+	return file_proto_printer_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *PrintRequest) GetMessage() string {
 	if x != nil {
 		return x.Message
+	}
+	return ""
+}
+
+func (x *PrintRequest) GetClientId() string {
+	if x != nil {
+		return x.ClientId
 	}
 	return ""
 }
@@ -75,7 +83,7 @@ type PrintResponse struct {
 
 func (x *PrintResponse) Reset() {
 	*x = PrintResponse{}
-	mi := &file_printer_proto_msgTypes[1]
+	mi := &file_proto_printer_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -87,7 +95,7 @@ func (x *PrintResponse) String() string {
 func (*PrintResponse) ProtoMessage() {}
 
 func (x *PrintResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_printer_proto_msgTypes[1]
+	mi := &file_proto_printer_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -100,7 +108,7 @@ func (x *PrintResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PrintResponse.ProtoReflect.Descriptor instead.
 func (*PrintResponse) Descriptor() ([]byte, []int) {
-	return file_printer_proto_rawDescGZIP(), []int{1}
+	return file_proto_printer_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *PrintResponse) GetSuccess() bool {
@@ -117,13 +125,14 @@ func (x *PrintResponse) GetResult() string {
 	return ""
 }
 
-var File_printer_proto protoreflect.FileDescriptor
+var File_proto_printer_proto protoreflect.FileDescriptor
 
-const file_printer_proto_rawDesc = "" +
+const file_proto_printer_proto_rawDesc = "" +
 	"\n" +
-	"\rprinter.proto\x12\aprinter\"(\n" +
+	"\x13proto/printer.proto\x12\aprinter\"E\n" +
 	"\fPrintRequest\x12\x18\n" +
-	"\amessage\x18\x01 \x01(\tR\amessage\"A\n" +
+	"\amessage\x18\x01 \x01(\tR\amessage\x12\x1b\n" +
+	"\tclient_id\x18\x02 \x01(\tR\bclientId\"A\n" +
 	"\rPrintResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x16\n" +
 	"\x06result\x18\x02 \x01(\tR\x06result2F\n" +
@@ -131,23 +140,23 @@ const file_printer_proto_rawDesc = "" +
 	"\x05Print\x12\x15.printer.PrintRequest\x1a\x16.printer.PrintResponseB\x1bZ\x19distributed-printer/protob\x06proto3"
 
 var (
-	file_printer_proto_rawDescOnce sync.Once
-	file_printer_proto_rawDescData []byte
+	file_proto_printer_proto_rawDescOnce sync.Once
+	file_proto_printer_proto_rawDescData []byte
 )
 
-func file_printer_proto_rawDescGZIP() []byte {
-	file_printer_proto_rawDescOnce.Do(func() {
-		file_printer_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_printer_proto_rawDesc), len(file_printer_proto_rawDesc)))
+func file_proto_printer_proto_rawDescGZIP() []byte {
+	file_proto_printer_proto_rawDescOnce.Do(func() {
+		file_proto_printer_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_printer_proto_rawDesc), len(file_proto_printer_proto_rawDesc)))
 	})
-	return file_printer_proto_rawDescData
+	return file_proto_printer_proto_rawDescData
 }
 
-var file_printer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
-var file_printer_proto_goTypes = []any{
+var file_proto_printer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_printer_proto_goTypes = []any{
 	(*PrintRequest)(nil),  // 0: printer.PrintRequest
 	(*PrintResponse)(nil), // 1: printer.PrintResponse
 }
-var file_printer_proto_depIdxs = []int32{
+var file_proto_printer_proto_depIdxs = []int32{
 	0, // 0: printer.PrintService.Print:input_type -> printer.PrintRequest
 	1, // 1: printer.PrintService.Print:output_type -> printer.PrintResponse
 	1, // [1:2] is the sub-list for method output_type
@@ -157,26 +166,26 @@ var file_printer_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_printer_proto_init() }
-func file_printer_proto_init() {
-	if File_printer_proto != nil {
+func init() { file_proto_printer_proto_init() }
+func file_proto_printer_proto_init() {
+	if File_proto_printer_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_printer_proto_rawDesc), len(file_printer_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_printer_proto_rawDesc), len(file_proto_printer_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_printer_proto_goTypes,
-		DependencyIndexes: file_printer_proto_depIdxs,
-		MessageInfos:      file_printer_proto_msgTypes,
+		GoTypes:           file_proto_printer_proto_goTypes,
+		DependencyIndexes: file_proto_printer_proto_depIdxs,
+		MessageInfos:      file_proto_printer_proto_msgTypes,
 	}.Build()
-	File_printer_proto = out.File
-	file_printer_proto_goTypes = nil
-	file_printer_proto_depIdxs = nil
+	File_proto_printer_proto = out.File
+	file_proto_printer_proto_goTypes = nil
+	file_proto_printer_proto_depIdxs = nil
 }

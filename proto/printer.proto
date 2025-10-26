@@ -10,6 +10,7 @@ service PrintService {
 
 message PrintRequest {
   string message = 1;
+  string client_id = 2;
 }
 
 message PrintResponse {
