@@ -4,7 +4,6 @@ option go_package = "distributed-printer/proto";
 
 package printer;
 
-// Simple print service
 service PrintService {
   rpc Print(PrintRequest) returns (PrintResponse);
 }

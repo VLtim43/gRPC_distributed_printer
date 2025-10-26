@@ -5,8 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 
 	pb "distributed-printer/proto"
+
 	"google.golang.org/grpc"
 )
 
@@ -17,7 +21,6 @@ type printServer struct {
 func (s *printServer) Print(ctx context.Context, req *pb.PrintRequest) (*pb.PrintResponse, error) {
 	log.Printf("Received print request: %s", req.Message)
 
-	// Simulate printing
 	fmt.Println("PRINTING:", req.Message)
 
 	return &pb.PrintResponse{
@@ -39,7 +42,19 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterPrintServiceServer(s, &printServer{})
 
+	// Setup graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		log.Println("\nShutting down server gracefully...")
+		s.GracefulStop()
+		os.Exit(0)
+	}()
+
 	log.Printf("Print server listening on port %s", port)
+	log.Println("Press Ctrl+C to stop the server")
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

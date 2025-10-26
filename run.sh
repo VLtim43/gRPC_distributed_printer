@@ -1,24 +1,33 @@
 #!/bin/bash
 
-if command -v x-terminal-emulator &> /dev/null; then
-    TERM_CMD="x-terminal-emulator -e"
-elif command -v alacritty &> /dev/null; then
-    TERM_CMD="alacritty -e"
-elif command -v kitty &> /dev/null; then
-    TERM_CMD="kitty -e"
-elif command -v gnome-terminal &> /dev/null; then
-    TERM_CMD="gnome-terminal --"
-elif command -v xterm &> /dev/null; then
-    TERM_CMD="xterm -e"
-else
+# List of terminals: "command:args"
+TERMINALS=(
+    "alacritty:-e"
+    "kitty:-e"
+    "gnome-terminal:--"
+    "x-terminal-emulator:-e"
+    "xterm:-e"
+)
+
+TERM_CMD=""
+for term in "${TERMINALS[@]}"; do
+    cmd="${term%%:*}"
+    args="${term#*:}"
+    if command -v "$cmd" &> /dev/null; then
+        TERM_CMD="$cmd $args"
+        break
+    fi
+done
+
+if [ -z "$TERM_CMD" ]; then
     echo "No supported terminal emulator found"
     exit 1
 fi
 
 echo "Starting server..."
-$TERM_CMD bash -c "cd $(pwd) && go run server/main.go; read -p 'Press enter to close...'" &
+$TERM_CMD bash -c "cd $(pwd) && trap 'kill 0' EXIT; go run server/main.go" &
 
 sleep 2
 
 echo "Starting client..."
-$TERM_CMD bash -c "cd $(pwd) && go run client/main.go; read -p 'Press enter to close...'" &
+$TERM_CMD bash -c "cd $(pwd) && trap 'kill 0' EXIT; go run client/main.go; read -p 'Press enter to close...'" &
