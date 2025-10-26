@@ -27,6 +27,9 @@ func (s *printServer) Print(ctx context.Context, req *pb.PrintRequest) (*pb.Prin
 }
 
 func main() {
+	fmt.Println("========== SERVER ==========")
+	fmt.Println()
+
 	port := "50051"
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {

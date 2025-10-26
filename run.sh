@@ -15,8 +15,10 @@ else
     exit 1
 fi
 
+echo "Starting server..."
 $TERM_CMD bash -c "cd $(pwd) && go run server/main.go; read -p 'Press enter to close...'" &
 
 sleep 2
 
+echo "Starting client..."
 $TERM_CMD bash -c "cd $(pwd) && go run client/main.go; read -p 'Press enter to close...'" &
