@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "distributed-printer/proto";
+
+package printer;
+
+// Simple print service
+service PrintService {
+  rpc Print(PrintRequest) returns (PrintResponse);
+}
+
+message PrintRequest {
+  string message = 1;
+}
+
+message PrintResponse {
+  bool success = 1;
+  string result = 2;
+}
