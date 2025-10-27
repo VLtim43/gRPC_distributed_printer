@@ -125,6 +125,157 @@ func (x *PrintResponse) GetResult() string {
 	return ""
 }
 
+// Request message for Ricart-Agrawala algorithm
+type AccessRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ClientId      string                 `protobuf:"bytes,1,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AccessRequest) Reset() {
+	*x = AccessRequest{}
+	mi := &file_proto_printer_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AccessRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AccessRequest) ProtoMessage() {}
+
+func (x *AccessRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_printer_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AccessRequest.ProtoReflect.Descriptor instead.
+func (*AccessRequest) Descriptor() ([]byte, []int) {
+	return file_proto_printer_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *AccessRequest) GetClientId() string {
+	if x != nil {
+		return x.ClientId
+	}
+	return ""
+}
+
+func (x *AccessRequest) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+// Reply message for Ricart-Agrawala algorithm
+type AccessReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ClientId      string                 `protobuf:"bytes,1,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"`
+	Timestamp     int64                  `protobuf:"varint,2,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Granted       bool                   `protobuf:"varint,3,opt,name=granted,proto3" json:"granted,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AccessReply) Reset() {
+	*x = AccessReply{}
+	mi := &file_proto_printer_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AccessReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AccessReply) ProtoMessage() {}
+
+func (x *AccessReply) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_printer_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AccessReply.ProtoReflect.Descriptor instead.
+func (*AccessReply) Descriptor() ([]byte, []int) {
+	return file_proto_printer_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *AccessReply) GetClientId() string {
+	if x != nil {
+		return x.ClientId
+	}
+	return ""
+}
+
+func (x *AccessReply) GetTimestamp() int64 {
+	if x != nil {
+		return x.Timestamp
+	}
+	return 0
+}
+
+func (x *AccessReply) GetGranted() bool {
+	if x != nil {
+		return x.Granted
+	}
+	return false
+}
+
+// Empty message for acknowledgment
+type Empty struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	mi := &file_proto_printer_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_printer_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_proto_printer_proto_rawDescGZIP(), []int{4}
+}
+
 var File_proto_printer_proto protoreflect.FileDescriptor
 
 const file_proto_printer_proto_rawDesc = "" +
@@ -135,9 +286,20 @@ const file_proto_printer_proto_rawDesc = "" +
 	"\tclient_id\x18\x02 \x01(\tR\bclientId\"A\n" +
 	"\rPrintResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x16\n" +
-	"\x06result\x18\x02 \x01(\tR\x06result2F\n" +
+	"\x06result\x18\x02 \x01(\tR\x06result\"J\n" +
+	"\rAccessRequest\x12\x1b\n" +
+	"\tclient_id\x18\x01 \x01(\tR\bclientId\x12\x1c\n" +
+	"\ttimestamp\x18\x02 \x01(\x03R\ttimestamp\"b\n" +
+	"\vAccessReply\x12\x1b\n" +
+	"\tclient_id\x18\x01 \x01(\tR\bclientId\x12\x1c\n" +
+	"\ttimestamp\x18\x02 \x01(\x03R\ttimestamp\x12\x18\n" +
+	"\agranted\x18\x03 \x01(\bR\agranted\"\a\n" +
+	"\x05Empty2F\n" +
 	"\fPrintService\x126\n" +
-	"\x05Print\x12\x15.printer.PrintRequest\x1a\x16.printer.PrintResponseB\x1bZ\x19distributed-printer/protob\x06proto3"
+	"\x05Print\x12\x15.printer.PrintRequest\x1a\x16.printer.PrintResponse2\x83\x01\n" +
+	"\rClientService\x12=\n" +
+	"\rRequestAccess\x12\x16.printer.AccessRequest\x1a\x14.printer.AccessReply\x123\n" +
+	"\vReplyAccess\x12\x14.printer.AccessReply\x1a\x0e.printer.EmptyB\x1bZ\x19distributed-printer/protob\x06proto3"
 
 var (
 	file_proto_printer_proto_rawDescOnce sync.Once
@@ -151,16 +313,23 @@ func file_proto_printer_proto_rawDescGZIP() []byte {
 	return file_proto_printer_proto_rawDescData
 }
 
-var file_proto_printer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_proto_printer_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
 var file_proto_printer_proto_goTypes = []any{
 	(*PrintRequest)(nil),  // 0: printer.PrintRequest
 	(*PrintResponse)(nil), // 1: printer.PrintResponse
+	(*AccessRequest)(nil), // 2: printer.AccessRequest
+	(*AccessReply)(nil),   // 3: printer.AccessReply
+	(*Empty)(nil),         // 4: printer.Empty
 }
 var file_proto_printer_proto_depIdxs = []int32{
 	0, // 0: printer.PrintService.Print:input_type -> printer.PrintRequest
-	1, // 1: printer.PrintService.Print:output_type -> printer.PrintResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: printer.ClientService.RequestAccess:input_type -> printer.AccessRequest
+	3, // 2: printer.ClientService.ReplyAccess:input_type -> printer.AccessReply
+	1, // 3: printer.PrintService.Print:output_type -> printer.PrintResponse
+	3, // 4: printer.ClientService.RequestAccess:output_type -> printer.AccessReply
+	4, // 5: printer.ClientService.ReplyAccess:output_type -> printer.Empty
+	3, // [3:6] is the sub-list for method output_type
+	0, // [0:3] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -177,9 +346,9 @@ func file_proto_printer_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_printer_proto_rawDesc), len(file_proto_printer_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   5,
 			NumExtensions: 0,
-			NumServices:   1,
+			NumServices:   2,
 		},
 		GoTypes:           file_proto_printer_proto_goTypes,
 		DependencyIndexes: file_proto_printer_proto_depIdxs,

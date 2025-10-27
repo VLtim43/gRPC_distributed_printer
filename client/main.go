@@ -11,6 +11,7 @@ import (
 	"time"
 
 	pb "distributed-printer/proto"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -44,7 +45,7 @@ func main() {
 			continue
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		resp, err := client.Print(ctx, &pb.PrintRequest{
 			Message:  message,
 			ClientId: clientID,

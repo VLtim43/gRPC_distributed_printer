@@ -25,6 +25,8 @@ const (
 // PrintServiceClient is the client API for PrintService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Service for the dumb print server (port 50051)
 type PrintServiceClient interface {
 	Print(ctx context.Context, in *PrintRequest, opts ...grpc.CallOption) (*PrintResponse, error)
 }
@@ -50,6 +52,8 @@ func (c *printServiceClient) Print(ctx context.Context, in *PrintRequest, opts .
 // PrintServiceServer is the server API for PrintService service.
 // All implementations must embed UnimplementedPrintServiceServer
 // for forward compatibility.
+//
+// Service for the dumb print server (port 50051)
 type PrintServiceServer interface {
 	Print(context.Context, *PrintRequest) (*PrintResponse, error)
 	mustEmbedUnimplementedPrintServiceServer()
@@ -114,6 +118,150 @@ var PrintService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Print",
 			Handler:    _PrintService_Print_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/printer.proto",
+}
+
+const (
+	ClientService_RequestAccess_FullMethodName = "/printer.ClientService/RequestAccess"
+	ClientService_ReplyAccess_FullMethodName   = "/printer.ClientService/ReplyAccess"
+)
+
+// ClientServiceClient is the client API for ClientService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// Service for peer-to-peer communication between smart clients
+type ClientServiceClient interface {
+	RequestAccess(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AccessReply, error)
+	ReplyAccess(ctx context.Context, in *AccessReply, opts ...grpc.CallOption) (*Empty, error)
+}
+
+type clientServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewClientServiceClient(cc grpc.ClientConnInterface) ClientServiceClient {
+	return &clientServiceClient{cc}
+}
+
+func (c *clientServiceClient) RequestAccess(ctx context.Context, in *AccessRequest, opts ...grpc.CallOption) (*AccessReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AccessReply)
+	err := c.cc.Invoke(ctx, ClientService_RequestAccess_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientServiceClient) ReplyAccess(ctx context.Context, in *AccessReply, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, ClientService_ReplyAccess_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ClientServiceServer is the server API for ClientService service.
+// All implementations must embed UnimplementedClientServiceServer
+// for forward compatibility.
+//
+// Service for peer-to-peer communication between smart clients
+type ClientServiceServer interface {
+	RequestAccess(context.Context, *AccessRequest) (*AccessReply, error)
+	ReplyAccess(context.Context, *AccessReply) (*Empty, error)
+	mustEmbedUnimplementedClientServiceServer()
+}
+
+// UnimplementedClientServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedClientServiceServer struct{}
+
+func (UnimplementedClientServiceServer) RequestAccess(context.Context, *AccessRequest) (*AccessReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RequestAccess not implemented")
+}
+func (UnimplementedClientServiceServer) ReplyAccess(context.Context, *AccessReply) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReplyAccess not implemented")
+}
+func (UnimplementedClientServiceServer) mustEmbedUnimplementedClientServiceServer() {}
+func (UnimplementedClientServiceServer) testEmbeddedByValue()                       {}
+
+// UnsafeClientServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ClientServiceServer will
+// result in compilation errors.
+type UnsafeClientServiceServer interface {
+	mustEmbedUnimplementedClientServiceServer()
+}
+
+func RegisterClientServiceServer(s grpc.ServiceRegistrar, srv ClientServiceServer) {
+	// If the following call pancis, it indicates UnimplementedClientServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&ClientService_ServiceDesc, srv)
+}
+
+func _ClientService_RequestAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientServiceServer).RequestAccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClientService_RequestAccess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientServiceServer).RequestAccess(ctx, req.(*AccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientService_ReplyAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AccessReply)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientServiceServer).ReplyAccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClientService_ReplyAccess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientServiceServer).ReplyAccess(ctx, req.(*AccessReply))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// ClientService_ServiceDesc is the grpc.ServiceDesc for ClientService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var ClientService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "printer.ClientService",
+	HandlerType: (*ClientServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RequestAccess",
+			Handler:    _ClientService_RequestAccess_Handler,
+		},
+		{
+			MethodName: "ReplyAccess",
+			Handler:    _ClientService_ReplyAccess_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

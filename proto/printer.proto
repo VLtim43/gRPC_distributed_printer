@@ -4,6 +4,7 @@ option go_package = "distributed-printer/proto";
 
 package printer;
 
+// Service for the dumb print server (port 50051)
 service PrintService {
   rpc Print(PrintRequest) returns (PrintResponse);
 }
@@ -17,3 +18,25 @@ message PrintResponse {
   bool success = 1;
   string result = 2;
 }
+
+// Service for peer-to-peer communication between smart clients
+service ClientService {
+  rpc RequestAccess(AccessRequest) returns (AccessReply);
+  rpc ReplyAccess(AccessReply) returns (Empty);
+}
+
+// Request message for Ricart-Agrawala algorithm
+message AccessRequest {
+  string client_id = 1;
+  int64 timestamp = 2;
+}
+
+// Reply message for Ricart-Agrawala algorithm
+message AccessReply {
+  string client_id = 1;
+  int64 timestamp = 2;
+  bool granted = 3;
+}
+
+// Empty message for acknowledgment
+message Empty {}
