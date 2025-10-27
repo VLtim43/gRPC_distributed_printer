@@ -1,0 +1,14 @@
+build/bin
+node_modules
+frontend/dist
+CLAUDE.md
+data/
+data/*
+/claude
+claude
+.claude
+
+*.bin
+*.idx
+*.txt
+/data
