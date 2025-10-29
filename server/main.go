@@ -28,7 +28,6 @@ func (s *printServer) Print(ctx context.Context, req *pb.PrintRequest) (*pb.Prin
 	printOutput := fmt.Sprintf("[TS: %d] CLIENT %s: %s", timestamp, req.ClientId, req.Message)
 	fmt.Println(printOutput)
 
-	// Simulate printing time with 2-3 second delay
 	delay := 2 + rand.Intn(2) // Random delay between 2-3 seconds
 	time.Sleep(time.Duration(delay) * time.Second)
 
