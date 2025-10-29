@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -18,15 +17,25 @@ import (
 )
 
 func main() {
-	// Auto-generate unique client ID
-	clientID := fmt.Sprintf("%d", rand.Int31())
+	// Parse configuration
+	config, err := ParseConfig()
+	if err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
 
 	lamportClock := clock.New()
 
-	fmt.Printf("========== CLIENT %s ==========\n", clientID)
+	fmt.Printf("========== CLIENT %s ==========\n", config.ClientID)
 	fmt.Println()
 
-	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	log.Printf("Client ID: %s", config.ClientID)
+	log.Printf("Listening port: %s", config.ClientPort)
+	log.Printf("Print server: %s", config.PrintServerAddr)
+	log.Printf("Peers: %v", config.PeerAddresses)
+	log.Printf("Request interval: %v", config.RequestInterval)
+	fmt.Println()
+
+	conn, err := grpc.NewClient(config.PrintServerAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect: %v", err)
 	}
@@ -35,7 +44,7 @@ func main() {
 	client := pb.NewPrintServiceClient(conn)
 	scanner := bufio.NewScanner(os.Stdin)
 
-	log.Printf("Connected to print server as CLIENT %s", clientID)
+	log.Printf("Connected to print server as CLIENT %s", config.ClientID)
 	log.Println("Type messages to print (Ctrl+C to exit)")
 
 	for {
@@ -56,7 +65,7 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		resp, err := client.Print(ctx, &pb.PrintRequest{
 			Message:  message,
-			ClientId: clientID,
+			ClientId: config.ClientID,
 		})
 		cancel()
 

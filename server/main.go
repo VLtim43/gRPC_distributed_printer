@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
 	"os"
 	"os/signal"
@@ -27,9 +26,6 @@ func (s *printServer) Print(ctx context.Context, req *pb.PrintRequest) (*pb.Prin
 	// Print in the specified format
 	printOutput := fmt.Sprintf("[TS: %d] CLIENT %s: %s", timestamp, req.ClientId, req.Message)
 	fmt.Println(printOutput)
-
-	delay := 2 + rand.Intn(2) // Random delay between 2-3 seconds
-	time.Sleep(time.Duration(delay) * time.Second)
 
 	// Return print confirmation
 	return &pb.PrintResponse{
