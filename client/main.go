@@ -7,8 +7,10 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"distributed-printer/clock"
@@ -40,7 +42,8 @@ type MutexClient struct {
 	config         *Config
 	lamportClock   *clock.Lamport
 	printClient    pb.PrintServiceClient
-	peerClients    map[string]pb.ClientServiceClient
+	peerClients    map[string]pb.ClientServiceClient      // addr -> client
+	clientIDToAddr map[string]string                       // clientID -> addr
 
 	// Ricart-Agrawala state
 	state          State
@@ -55,12 +58,13 @@ type MutexClient struct {
 // NewMutexClient creates a new mutex client
 func NewMutexClient(config *Config, lamportClock *clock.Lamport, printClient pb.PrintServiceClient) *MutexClient {
 	mc := &MutexClient{
-		config:        config,
-		lamportClock:  lamportClock,
-		printClient:   printClient,
-		peerClients:   make(map[string]pb.ClientServiceClient),
-		state:         RELEASED,
-		deferredQueue: make([]DeferredRequest, 0),
+		config:         config,
+		lamportClock:   lamportClock,
+		printClient:    printClient,
+		peerClients:    make(map[string]pb.ClientServiceClient),
+		clientIDToAddr: make(map[string]string),
+		state:          RELEASED,
+		deferredQueue:  make([]DeferredRequest, 0),
 	}
 	mc.replyCond = sync.NewCond(&mc.mu)
 	return mc
@@ -94,6 +98,10 @@ func (mc *MutexClient) RequestAccess(ctx context.Context, req *pb.AccessRequest)
 
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
+
+	// Learn the mapping from client ID to connection (from gRPC peer info)
+	// We'll build this mapping when we receive requests from peers
+	// This allows us to send targeted replies later
 
 	log.Printf("Received access request from %s with timestamp %d (my state: %v, my requestTime: %d)",
 		req.ClientId, req.Timestamp, mc.state, mc.requestTime)
@@ -205,6 +213,11 @@ func (mc *MutexClient) BroadcastRequest() {
 				return
 			}
 
+			// Learn the mapping: this reply's ClientId comes from this address
+			mc.mu.Lock()
+			mc.clientIDToAddr[reply.ClientId] = addr
+			mc.mu.Unlock()
+
 			// If granted, send it back to ourselves via ReplyAccess
 			if reply.Granted {
 				mc.ReplyAccess(context.Background(), reply)
@@ -235,7 +248,6 @@ func (mc *MutexClient) WaitForReplies() {
 // ReleaseCriticalSection releases the critical section and replies to deferred requests
 func (mc *MutexClient) ReleaseCriticalSection() {
 	mc.mu.Lock()
-	defer mc.mu.Unlock()
 
 	log.Printf("Releasing critical section")
 	mc.state = RELEASED
@@ -244,26 +256,42 @@ func (mc *MutexClient) ReleaseCriticalSection() {
 	deferredRequests := mc.deferredQueue
 	mc.deferredQueue = make([]DeferredRequest, 0)
 
+	mc.mu.Unlock()
+
 	// Send replies in separate goroutines
 	for _, req := range deferredRequests {
 		go func(clientID string) {
-			// Find the peer client for this request
-			for peerAddr, peerClient := range mc.peerClients {
-				ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-				defer cancel()
+			// Find the specific peer address for this client ID
+			mc.mu.Lock()
+			peerAddr, exists := mc.clientIDToAddr[clientID]
+			mc.mu.Unlock()
 
-				timestamp := mc.lamportClock.Increment()
-				log.Printf("Sending deferred reply to %s via %s", clientID, peerAddr)
+			if !exists {
+				log.Printf("Warning: No address found for client %s, cannot send deferred reply", clientID)
+				return
+			}
 
-				_, err := peerClient.ReplyAccess(ctx, &pb.AccessReply{
-					ClientId:  mc.config.ClientID,
-					Timestamp: timestamp,
-					Granted:   true,
-				})
+			// Get the peer client for this specific address
+			peerClient, exists := mc.peerClients[peerAddr]
+			if !exists {
+				log.Printf("Warning: No connection found for address %s (client %s)", peerAddr, clientID)
+				return
+			}
 
-				if err != nil {
-					log.Printf("Failed to send deferred reply to %s: %v", peerAddr, err)
-				}
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			timestamp := mc.lamportClock.Increment()
+			log.Printf("Sending deferred reply to %s at %s", clientID, peerAddr)
+
+			_, err := peerClient.ReplyAccess(ctx, &pb.AccessReply{
+				ClientId:  mc.config.ClientID,
+				Timestamp: timestamp,
+				Granted:   true,
+			})
+
+			if err != nil {
+				log.Printf("Failed to send deferred reply to %s: %v", clientID, err)
 			}
 		}(req.ClientID)
 	}
@@ -306,6 +334,34 @@ func (mc *MutexClient) PrintWithMutex(message string) error {
 	mc.ReleaseCriticalSection()
 
 	return nil
+}
+
+// StartAutomaticRequests starts a background goroutine that generates print requests automatically
+func (mc *MutexClient) StartAutomaticRequests(ctx context.Context) {
+	ticker := time.NewTicker(mc.config.RequestInterval)
+	defer ticker.Stop()
+
+	requestCounter := 1
+
+	log.Printf("Starting automatic print request generation (interval: %v)", mc.config.RequestInterval)
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("Stopping automatic request generation")
+			return
+		case <-ticker.C:
+			message := fmt.Sprintf("Auto-generated print request #%d", requestCounter)
+			requestCounter++
+
+			log.Printf("\n>>> AUTOMATIC REQUEST: %s", message)
+
+			// Perform print with mutual exclusion
+			if err := mc.PrintWithMutex(message); err != nil {
+				log.Printf("Automatic request failed: %v", err)
+			}
+		}
+	}
 }
 
 func main() {
@@ -354,28 +410,54 @@ func main() {
 	time.Sleep(2 * time.Second)
 
 	log.Printf("Connected to print server as CLIENT %s", config.ClientID)
-	log.Println("Type messages to print (Ctrl+C to exit)")
 	log.Println("Using Ricart-Agrawala mutual exclusion algorithm")
-	fmt.Println()
 
-	scanner := bufio.NewScanner(os.Stdin)
+	// Create context for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	for {
-		fmt.Print("> ")
-		if !scanner.Scan() {
-			break
-		}
+	// Setup signal handler for graceful shutdown
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-		message := strings.TrimSpace(scanner.Text())
-		if message == "" {
-			continue
-		}
+	go func() {
+		<-sigChan
+		log.Println("\nShutting down client gracefully...")
+		cancel()
+		os.Exit(0)
+	}()
 
-		// Print with mutual exclusion
-		if err := mutexClient.PrintWithMutex(message); err != nil {
-			log.Printf("Error: %v", err)
-		}
-
+	if config.AutoMode {
+		// Automatic mode: generate requests at regular intervals
+		log.Printf("AUTOMATIC MODE enabled (interval: %v)", config.RequestInterval)
+		log.Println("Press Ctrl+C to stop")
 		fmt.Println()
+
+		mutexClient.StartAutomaticRequests(ctx)
+	} else {
+		// Manual mode: accept user input
+		log.Println("MANUAL MODE: Type messages to print (Ctrl+C to exit)")
+		fmt.Println()
+
+		scanner := bufio.NewScanner(os.Stdin)
+
+		for {
+			fmt.Print("> ")
+			if !scanner.Scan() {
+				break
+			}
+
+			message := strings.TrimSpace(scanner.Text())
+			if message == "" {
+				continue
+			}
+
+			// Print with mutual exclusion
+			if err := mutexClient.PrintWithMutex(message); err != nil {
+				log.Printf("Error: %v", err)
+			}
+
+			fmt.Println()
+		}
 	}
 }

@@ -14,6 +14,7 @@ type Config struct {
 	PrintServerAddr string        // Address of the print server
 	PeerAddresses   []string      // List of peer client addresses
 	RequestInterval time.Duration // How often to generate print requests
+	AutoMode        bool          // Enable automatic print request generation
 }
 
 // ParseConfig parses command-line flags and returns a Config
@@ -26,6 +27,7 @@ func ParseConfig() (*Config, error) {
 	flag.StringVar(&config.ClientPort, "port", "", "Port to listen on (required, e.g., 50052)")
 	flag.StringVar(&config.PrintServerAddr, "server", "localhost:50051", "Print server address")
 	flag.StringVar(&peersFlag, "peers", "", "Comma-separated list of peer addresses (e.g., localhost:50053,localhost:50054)")
+	flag.BoolVar(&config.AutoMode, "auto", false, "Enable automatic print request generation")
 
 	var intervalSeconds int
 	flag.IntVar(&intervalSeconds, "interval", 10, "Print request interval in seconds")
