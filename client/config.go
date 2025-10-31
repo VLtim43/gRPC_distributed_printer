@@ -7,17 +7,15 @@ import (
 	"time"
 )
 
-// Config holds the client configuration
 type Config struct {
-	ClientID        string        // Unique identifier for this client
-	ClientPort      string        // Port this client listens on (e.g., "50052")
-	PrintServerAddr string        // Address of the print server
-	PeerAddresses   []string      // List of peer client addresses
-	RequestInterval time.Duration // How often to generate print requests
-	AutoMode        bool          // Enable automatic print request generation
+	ClientID        string
+	ClientPort      string // Port this client listens
+	PrintServerAddr string
+	PeerAddresses   []string // List of peer client addresses
+	RequestInterval time.Duration
+	AutoMode        bool // Enable automatic print request generation
 }
 
-// ParseConfig parses command-line flags and returns a Config
 func ParseConfig() (*Config, error) {
 	config := &Config{}
 
@@ -42,10 +40,8 @@ func ParseConfig() (*Config, error) {
 		return nil, fmt.Errorf("client port is required (use -port flag)")
 	}
 
-	// Parse peer addresses
 	if peersFlag != "" {
 		config.PeerAddresses = strings.Split(peersFlag, ",")
-		// Trim whitespace from each address
 		for i := range config.PeerAddresses {
 			config.PeerAddresses[i] = strings.TrimSpace(config.PeerAddresses[i])
 		}

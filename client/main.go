@@ -35,27 +35,24 @@ type DeferredRequest struct {
 	Timestamp int64
 }
 
-// MutexClient manages the Ricart-Agrawala mutual exclusion
 type MutexClient struct {
 	pb.UnimplementedClientServiceServer
 
 	config         *Config
 	lamportClock   *clock.Lamport
 	printClient    pb.PrintServiceClient
-	peerClients    map[string]pb.ClientServiceClient      // addr -> client
-	clientIDToAddr map[string]string                       // clientID -> addr
+	peerClients    map[string]pb.ClientServiceClient
+	clientIDToAddr map[string]string
 
-	// Ricart-Agrawala state
-	state          State
-	requestTime    int64
-	replyCount     int
-	deferredQueue  []DeferredRequest
+	state         State
+	requestTime   int64
+	replyCount    int
+	deferredQueue []DeferredRequest
 
-	mu             sync.Mutex
-	replyCond      *sync.Cond
+	mu        sync.Mutex
+	replyCond *sync.Cond
 }
 
-// NewMutexClient creates a new mutex client
 func NewMutexClient(config *Config, lamportClock *clock.Lamport, printClient pb.PrintServiceClient) *MutexClient {
 	mc := &MutexClient{
 		config:         config,
@@ -70,7 +67,7 @@ func NewMutexClient(config *Config, lamportClock *clock.Lamport, printClient pb.
 	return mc
 }
 
-// StartServer starts the gRPC server to listen for peer requests
+// starts the gRPC server to listen for peer requests
 func (mc *MutexClient) StartServer() error {
 	lis, err := net.Listen("tcp", ":"+mc.config.ClientPort)
 	if err != nil {
@@ -91,7 +88,7 @@ func (mc *MutexClient) StartServer() error {
 	return nil
 }
 
-// RequestAccess handles incoming access requests from peers (Ricart-Agrawala)
+// handles incoming access requests from peers (Ricart-Agrawala)
 func (mc *MutexClient) RequestAccess(ctx context.Context, req *pb.AccessRequest) (*pb.AccessReply, error) {
 	// Update Lamport clock with received timestamp
 	mc.lamportClock.Update(req.Timestamp)
@@ -99,14 +96,9 @@ func (mc *MutexClient) RequestAccess(ctx context.Context, req *pb.AccessRequest)
 	mc.mu.Lock()
 	defer mc.mu.Unlock()
 
-	// Learn the mapping from client ID to connection (from gRPC peer info)
-	// We'll build this mapping when we receive requests from peers
-	// This allows us to send targeted replies later
-
 	log.Printf("Received access request from %s with timestamp %d (my state: %v, my requestTime: %d)",
 		req.ClientId, req.Timestamp, mc.state, mc.requestTime)
 
-	// Ricart-Agrawala decision logic:
 	// Reply immediately if:
 	//   1. We're in RELEASED state (not interested), OR
 	//   2. We're in WANTED state but the requester has priority:
@@ -134,7 +126,6 @@ func (mc *MutexClient) RequestAccess(ctx context.Context, req *pb.AccessRequest)
 		Timestamp: req.Timestamp,
 	})
 
-	// Send a reply but mark as not granted (client will wait)
 	timestamp := mc.lamportClock.Increment()
 	return &pb.AccessReply{
 		ClientId:  mc.config.ClientID,
@@ -299,7 +290,6 @@ func (mc *MutexClient) ReleaseCriticalSection() {
 	log.Printf("Sent %d deferred replies", len(deferredRequests))
 }
 
-// PrintWithMutex performs a print operation with mutual exclusion
 func (mc *MutexClient) PrintWithMutex(message string) error {
 	log.Printf("\n========== REQUESTING CRITICAL SECTION ==========")
 

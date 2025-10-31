@@ -20,14 +20,11 @@ type printServer struct {
 }
 
 func (s *printServer) Print(ctx context.Context, req *pb.PrintRequest) (*pb.PrintResponse, error) {
-	// Get current timestamp
 	timestamp := time.Now().Unix()
 
-	// Print in the specified format
 	printOutput := fmt.Sprintf("[TS: %d] CLIENT %s: %s", timestamp, req.ClientId, req.Message)
 	fmt.Println(printOutput)
 
-	// Return print confirmation
 	return &pb.PrintResponse{
 		Success: true,
 		Result:  fmt.Sprintf("Print job completed for client %s", req.ClientId),
@@ -47,7 +44,7 @@ func main() {
 	s := grpc.NewServer()
 	pb.RegisterPrintServiceServer(s, &printServer{})
 
-	// Setup graceful shutdown
+	// Setup  shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
