@@ -328,19 +328,16 @@ func (mc *MutexClient) PrintWithMutex(message string) error {
 
 // StartAutomaticRequests starts a background goroutine that generates print requests automatically
 func (mc *MutexClient) StartAutomaticRequests(ctx context.Context) {
-	ticker := time.NewTicker(mc.config.RequestInterval)
-	defer ticker.Stop()
-
 	requestCounter := 1
 
-	log.Printf("Starting automatic print request generation (interval: %v)", mc.config.RequestInterval)
+	log.Printf("Starting automatic print request generation (base interval: %v, randomized)", mc.config.RequestInterval)
 
 	for {
 		select {
 		case <-ctx.Done():
 			log.Println("Stopping automatic request generation")
 			return
-		case <-ticker.C:
+		default:
 			message := fmt.Sprintf("Auto-generated print request #%d", requestCounter)
 			requestCounter++
 
@@ -349,6 +346,22 @@ func (mc *MutexClient) StartAutomaticRequests(ctx context.Context) {
 			// Perform print with mutual exclusion
 			if err := mc.PrintWithMutex(message); err != nil {
 				log.Printf("Automatic request failed: %v", err)
+			}
+
+			// Random sleep between 50% and 150% of the base interval
+			// This creates realistic concurrency and varied ordering
+			minInterval := mc.config.RequestInterval / 2
+			maxInterval := mc.config.RequestInterval + mc.config.RequestInterval/2
+			randomDelay := minInterval + time.Duration(time.Now().UnixNano()%(maxInterval.Nanoseconds()-minInterval.Nanoseconds()))
+
+			log.Printf("Waiting %v until next request...", randomDelay)
+
+			select {
+			case <-ctx.Done():
+				log.Println("Stopping automatic request generation")
+				return
+			case <-time.After(randomDelay):
+				// Continue to next iteration
 			}
 		}
 	}
