@@ -2,7 +2,7 @@
 
 # Script to run the distributed print system with automatic print request generation
 
-# List of terminals: "command:args"
+# List of terminals
 TERMINALS=(
     "alacritty:-e"
     "kitty:-e"

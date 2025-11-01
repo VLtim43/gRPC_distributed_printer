@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# List of terminals: "command:args"
+# List of terminals
 TERMINALS=(
     "alacritty:-e"
     "kitty:-e"
