@@ -1,5 +1,10 @@
 # gRPC_distributed_printer
 
+A distributed printing system using gRPC for inter-process communication, Ricart-Agrawala algorithm for distributed mutual exclusion, and Lamport logical clocks for event ordering.
+
+The print server (port 50051) is stateless and doesn't participate in coordination. the clients run both as gRPC servers and clients here, as they receive mutual exclusion requests from peers (that you have to pass as a parameter) while simultaneously requesting access themselves.
+When a client wants to print, it broadcasts a timestamped request to all (known) peers. Each peer either grants permission immediately (if not interested or has lower priority) or defers the reply (if currently printing or has higher priority based on timestamp comparison). Once all peers grant permission, the client accesses the printer. After printing, deferred replies are sent to waiting clients. Lamport clocks ensure causal ordering: clocks increment on local events and update to max(local, received) + 1 on message receipt.
+
 ## Commands
 
 ```bash
