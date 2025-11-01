@@ -2,13 +2,10 @@ build/bin
 node_modules
 frontend/dist
 CLAUDE.md
-./claude
 /bin
 data/
 data/*
-/claude
-claude
-.claude
+
 
 *.bin
 *.idx
