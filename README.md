@@ -7,6 +7,38 @@ When a client wants to print, it broadcasts a timestamped request to all (known)
 
 You can ctrl+c on the cliens to stop them while the terminal is still open. So you can check their messages queues and stuff. I had problems with the main server being still open even after it's terminal killed, so I had to use this kill_server.sh to kill the process.
 
+## Setup
+
+1. **Install Go** (1.20+): https://go.dev/doc/install
+
+2. **Clone this repository**:
+
+   ```bash
+   git clone <repository-url>
+   cd gRPC_distributed_printer
+   ```
+
+3. **Install dependencies**:
+
+   ```bash
+   go mod download
+   ```
+
+4. **Install protoc compiler**:
+   `sudo apt install protobuf-compiler`
+
+5. **Install Go protobuf plugins**:
+
+   ```bash
+   go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+   go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+   ```
+
+6. **Generate protobuf files**:
+   ```bash
+   make proto
+   ```
+
 ## Commands
 
 ```bash
